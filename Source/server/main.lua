@@ -53,26 +53,37 @@ function givevehicleRandomPlate(_source, _args)
 end
 
 RegisterCommand(Cmd.Command.delcar, function(source, args)
-	if havePermission(source) then
+	local _source = source
+	local xPlayer = ESX.GetPlayerFromId(_source)
+	if havePermission(_source) then
 		if args[1] == nil then
 			Notify.NotifyServer(_source, 'error', 'กรุณาใส่ ID ของผู้เล่น')
 		elseif args[2] == nil or args[3] == nil then
-			Notify.NotifyServer(source, 'error', 'กรุณาใส่ป้ายทะเบียนที่จะลบ')
+			Notify.NotifyServer(_source, 'error', 'กรุณาใส่ป้ายทะเบียนที่จะลบ')
 		else
 			local target = args[1]
 			local xTarget = ESX.GetPlayerFromId(target)
 			if not xTarget then 
-				Notify.NotifyServer(source, 'error', 'ผู้เล่นนั้นไม่ได้อยู่ในเกม')
+				Notify.NotifyServer(_source, 'error', 'ผู้เล่นนั้นไม่ได้อยู่ในเกม')
 				return
 			end
 			local plate = args[2]..' '..args[3]
 			plate = string.upper(plate)
+			local IsPalte = Quries.isPlateAvailable(plate)
+			if IsPalte then
+				Notify.NotifyServer(_source, 'error', 'ไม่พบรถที่ตรงกับป้ายทะเบียนนี้')
+				return
+			end
 			Quries.DeleteVehicle(plate)
 			Sync.AfterDelVehicle(xTarget,plate)
-			Notify.NotifyServer(source, 'success', 'ลบรถที่มีป้ายทะเบียน '..plate..' แล้ว')
+			Notify.NotifyServer(_source, 'success', 'ลบรถที่มีป้ายทะเบียน '..plate..' แล้ว')
+
+			if Discord.Webhook then
+				Discord.Delcar(xPlayer, plate, xTarget)
+			end
 		end
 	else
-		Notify.NotifyServer(source, 'error', 'คุณไม่มีสิทธิ์ใช้คำสั่งนี้')
+		Notify.NotifyServer(_source, 'error', 'คุณไม่มีสิทธิ์ใช้คำสั่งนี้')
 	end		
 end)
 
@@ -92,8 +103,8 @@ AddEventHandler('UKB_GiveCarKeys:excuteVehicle', function(vehicleProps, playerID
 
 		Notify.TargetVehicle(xTarget, vehicleProps.plate)
 
-		if Discord.Enable then
-			Discord.Webhook(xPlayer, vehicleProps.plate, xTarget, model)
+		if Discord.Webhook then
+			Discord.GiveCar(xPlayer, vehicleProps.plate, xTarget, model)
 		end
 	else
 		Notify.NotifyServer(source,'error','ผู้เล่นนั้้นไม่ได้อยุ่ในเกม')
