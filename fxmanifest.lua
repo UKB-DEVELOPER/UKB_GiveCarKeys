@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 
 description 'UKB_GiveCarKeys'
-author 'Unknowkubbrother'
+author 'UKB - DEVELOPER (Unknowkubbrother)'
 
 version '1.0.0'
 
